@@ -231,3 +231,7 @@ curl --insecure -u elastic:MyElasticsearchPassword https://localhost:9200
 ~~~
 docker exec -it es-master1 /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
 ~~~
+
+# Testing VS Production
+
+- For testing purposes I have hard coded the Elastic password as an ENVironment variable in the Dockerfile. For Security reasons you would never do this in Production.
