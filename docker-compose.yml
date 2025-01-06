@@ -1,0 +1,137 @@
+version: "3.8"
+
+services:
+  ###################################################################
+  # 3 Master-eligible Nodes
+  ###################################################################
+  es-master1:
+    image: my-elasticsearch:latest
+    container_name: es-master1
+    environment:
+      - node.name=es-master1
+      - node.roles=master
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - bootstrap.memory_lock=true
+      # Java heap (example: 1GB). Adjust for your hardware.
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-master1-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"   # Expose only on master1 for easy testing
+    networks:
+      - esnet
+
+  es-master2:
+    image: my-elasticsearch:latest
+    container_name: es-master2
+    environment:
+      - node.name=es-master2
+      - node.roles=master
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-master2-data:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+  es-master3:
+    image: my-elasticsearch:latest
+    container_name: es-master3
+    environment:
+      - node.name=es-master3
+      - node.roles=master
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-master3-data:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+  ###################################################################
+  # 3 Data + Ingest + Coordinating Nodes
+  ###################################################################
+  es-data1:
+    image: my-elasticsearch:latest
+    container_name: es-data1
+    environment:
+      - node.name=es-data1
+      - node.roles=data,ingest,transform,ml,remote_cluster_client
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data1-data:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+  es-data2:
+    image: my-elasticsearch:latest
+    container_name: es-data2
+    environment:
+      - node.name=es-data2
+      - node.roles=data,ingest,transform,ml,remote_cluster_client
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data2-data:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+  es-data3:
+    image: my-elasticsearch:latest
+    container_name: es-data3
+    environment:
+      - node.name=es-data3
+      - node.roles=data,ingest,transform,ml,remote_cluster_client
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es-data3-data:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+volumes:
+  es-master1-data:
+  es-master2-data:
+  es-master3-data:
+  es-data1-data:
+  es-data2-data:
+  es-data3-data:
+
+networks:
+  esnet:
+    driver: bridge
