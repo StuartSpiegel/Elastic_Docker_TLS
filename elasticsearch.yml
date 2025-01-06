@@ -1,0 +1,38 @@
+# ------------------------------------------------------------------
+# Base Elasticsearch config loaded by all nodes.
+# Additional node-specific settings (like node.roles, node.name) will
+# be overridden via environment variables in docker-compose.yml
+# ------------------------------------------------------------------
+
+cluster.name: "my-secure-tls-cluster"
+
+# Enable Security
+xpack.security.enabled: true
+
+# Enable TLS for HTTP (REST) layer
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.keystore.path: certs/node/instance.p12
+xpack.security.http.ssl.truststore.path: certs/node/instance.p12
+
+# OR if using PEM:
+# xpack.security.http.ssl.enabled: true
+# xpack.security.http.ssl.certificate: certs/node/es-node.crt
+# xpack.security.http.ssl.key: certs/node/es-node.key
+# xpack.security.http.ssl.certificate_authorities: [ "certs/ca/ca.crt" ]
+
+# Enable TLS for Transport layer (inter-node communication)
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.keystore.path: certs/node/instance.p12
+xpack.security.transport.ssl.truststore.path: certs/node/instance.p12
+
+# OR if using PEM:
+# xpack.security.transport.ssl.enabled: true
+# xpack.security.transport.ssl.verification_mode: certificate
+# xpack.security.transport.ssl.certificate: certs/node/es-node.crt
+# xpack.security.transport.ssl.key: certs/node/es-node.key
+# xpack.security.transport.ssl.certificate_authorities: [ "certs/ca/ca.crt" ]
+
+# Uncomment or add any other settings you wish to customize.
+# For example, to allow using the 'elastic' user from the host:
+# xpack.security.http.ssl.client_authentication: optional
