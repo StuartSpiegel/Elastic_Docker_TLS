@@ -1,30 +1,43 @@
 version: "3.8"
 
+volumes:
+  es-master1-data:
+  es-master2-data:
+  es-master3-data:
+  es-data1-data:
+  es-data2-data:
+  es-data3-data:
+  es-certs:  # Shared volume for TLS certs
+
+networks:
+  esnet:
+    driver: bridge
+
 services:
   ###################################################################
-  # 3 Master-Eligible Nodes
+  # Elasticsearch Master Nodes
   ###################################################################
   es-master1:
     image: my-elasticsearch:latest
+    container_name: es-master1
     environment:
       - node.name=es-master1
       - node.roles=master
       - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
       - cluster.initial_master_nodes=es-master1,es-master2,es-master3
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
-      - network.host=0.0.0.0           # <-- KEY FIX
-    # Persist data on local volume:
+      - network.host=0.0.0.0
     volumes:
       - es-master1-data:/usr/share/elasticsearch/data
-    # Publish on local port 9200:
+      - es-certs:/usr/share/elasticsearch/config/certs
     ports:
       - "9200:9200"
-    # All on the same user-defined network:
     networks:
       - esnet
 
   es-master2:
     image: my-elasticsearch:latest
+    container_name: es-master2
     environment:
       - node.name=es-master2
       - node.roles=master
@@ -34,7 +47,7 @@ services:
       - network.host=0.0.0.0
     volumes:
       - es-master2-data:/usr/share/elasticsearch/data
-    # Publish on local port 9201:
+      - es-certs:/usr/share/elasticsearch/config/certs
     ports:
       - "9201:9200"
     networks:
@@ -42,6 +55,7 @@ services:
 
   es-master3:
     image: my-elasticsearch:latest
+    container_name: es-master3
     environment:
       - node.name=es-master3
       - node.roles=master
@@ -51,17 +65,18 @@ services:
       - network.host=0.0.0.0
     volumes:
       - es-master3-data:/usr/share/elasticsearch/data
-    # Publish on local port 9202:
+      - es-certs:/usr/share/elasticsearch/config/certs
     ports:
       - "9202:9200"
     networks:
       - esnet
 
   ###################################################################
-  # 3 Data + Ingest + Transform + ML Nodes
+  # Elasticsearch Data Nodes
   ###################################################################
   es-data1:
     image: my-elasticsearch:latest
+    container_name: es-data1
     environment:
       - node.name=es-data1
       - node.roles=data,ingest,transform,ml,remote_cluster_client
@@ -71,7 +86,7 @@ services:
       - network.host=0.0.0.0
     volumes:
       - es-data1-data:/usr/share/elasticsearch/data
-    # Publish on local port 9203:
+      - es-certs:/usr/share/elasticsearch/config/certs
     ports:
       - "9203:9200"
     networks:
@@ -79,6 +94,7 @@ services:
 
   es-data2:
     image: my-elasticsearch:latest
+    container_name: es-data2
     environment:
       - node.name=es-data2
       - node.roles=data,ingest,transform,ml,remote_cluster_client
@@ -88,7 +104,7 @@ services:
       - network.host=0.0.0.0
     volumes:
       - es-data2-data:/usr/share/elasticsearch/data
-    # Publish on local port 9204:
+      - es-certs:/usr/share/elasticsearch/config/certs
     ports:
       - "9204:9200"
     networks:
@@ -96,6 +112,7 @@ services:
 
   es-data3:
     image: my-elasticsearch:latest
+    container_name: es-data3
     environment:
       - node.name=es-data3
       - node.roles=data,ingest,transform,ml,remote_cluster_client
@@ -105,22 +122,53 @@ services:
       - network.host=0.0.0.0
     volumes:
       - es-data3-data:/usr/share/elasticsearch/data
-    # Publish on local port 9205:
+      - es-certs:/usr/share/elasticsearch/config/certs
     ports:
       - "9205:9200"
     networks:
       - esnet
 
-# Named volumes for data
-volumes:
-  es-master1-data:
-  es-master2-data:
-  es-master3-data:
-  es-data1-data:
-  es-data2-data:
-  es-data3-data:
+  ###################################################################
+  # Kibana Nodes
+  ###################################################################
+  kibana1:
+    image: docker.elastic.co/kibana/kibana:8.6.2
+    container_name: kibana1
+    environment:
+      - SERVER_NAME=kibana1
+      - SERVER_HOST=0.0.0.0
+      - ELASTICSEARCH_HOSTS=["https://es-master1:9200","https://es-master2:9200","https://es-master3:9200"]
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/usr/share/kibana/config/certs/ca/ca.crt
+      - SERVER_SSL_ENABLED=true
+      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/node/es-node/es-node.crt
+      - SERVER_SSL_KEY=/usr/share/kibana/config/certs/node/es-node/es-node.key
+    volumes:
+      - es-certs:/usr/share/kibana/config/certs:ro
+    ports:
+      - "5601:5601"
+    networks:
+      - esnet
+    depends_on:
+      - es-master1
 
-# Single user-defined network so each container can discover each other by service name
-networks:
-  esnet:
-    driver: bridge
+  kibana2:
+    image: docker.elastic.co/kibana/kibana:8.6.2
+    container_name: kibana2
+    environment:
+      - SERVER_NAME=kibana2
+      - SERVER_HOST=0.0.0.0
+      - ELASTICSEARCH_HOSTS=["https://es-master1:9200","https://es-master2:9200","https://es-master3:9200"]
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=/usr/share/kibana/config/certs/ca/ca.crt
+      - SERVER_SSL_ENABLED=true
+      - SERVER_SSL_CERTIFICATE=/usr/share/kibana/config/certs/node/es-node/es-node.crt
+      - SERVER_SSL_KEY=/usr/share/kibana/config/certs/node/es-node/es-node.key
+    volumes:
+      - es-certs:/usr/share/kibana/config/certs:ro
+    ports:
+      - "5602:5601"
+    networks:
+      - esnet
+    depends_on:
+      - es-master1
