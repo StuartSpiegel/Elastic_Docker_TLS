@@ -1,0 +1,49 @@
+instances:
+  - name: "es-master1"
+    dns:
+      - "es-master1"
+      - "localhost"
+    ip:
+      - "127.0.0.1"
+  - name: "es-master2"
+    dns:
+      - "es-master2"
+      - "localhost"
+    ip:
+      - "127.0.0.1"
+  - name: "es-master3"
+    dns:
+      - "es-master3"
+      - "localhost"
+    ip:
+      - "127.0.0.1"
+  - name: "es-data1"
+    dns:
+      - "es-data1"
+      - "localhost"
+    ip:
+      - "127.0.0.1"
+  - name: "es-data2"
+    dns:
+      - "es-data2"
+      - "localhost"
+    ip:
+      - "127.0.0.1"
+  - name: "es-coord1"
+    dns:
+      - "es-coord1"
+      - "localhost"
+    ip:
+      - "127.0.0.1"
+  - name: "kibana1"
+    dns:
+      - "kibana1"
+      - "localhost"
+    ip:
+      - "127.0.0.1"
+  - name: "kibana2"
+    dns:
+      - "kibana2"
+      - "localhost"
+    ip:
+      - "127.0.0.1"
