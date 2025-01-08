@@ -1,0 +1,13 @@
+- name: Generate CA and node certificates
+  command: >
+    docker run --rm -v {{ certs_dir }}:/certs
+    docker.elastic.co/elasticsearch/elasticsearch:{{ elastic_version }}
+    elasticsearch-certutil cert --pem --out /certs/certs.zip
+  args:
+    creates: "{{ certs_dir }}/ca.crt"
+
+- name: Extract certificates
+  unarchive:
+    src: "{{ certs_dir }}/certs.zip"
+    dest: "{{ certs_dir }}"
+    remote_src: true
