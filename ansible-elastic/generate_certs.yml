@@ -1,0 +1,67 @@
+---
+- name: Generate Elasticsearch TLS certificates
+  hosts: localhost
+  become: false
+  tasks:
+
+    - name: Ensure the certs directory exists
+      file:
+        path: "{{ ansible_env.PWD }}/certs"
+        state: directory
+        mode: '0755'
+
+    - name: Remove existing certs.zip if it exists
+      file:
+        path: "{{ ansible_env.PWD }}/certs/certs.zip"
+        state: absent
+      ignore_errors: yes  # Ignores errors if the file does not exist
+
+    - name: Set correct permissions for certs directory
+      command: chmod -R 777 "{{ ansible_env.PWD }}/certs"
+      # Ensures the directory is readable and writable for all users
+
+    - name: Generate the CA certificate
+      command: >
+        docker run --rm -v "{{ ansible_env.PWD }}/certs:/certs"
+        docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+        elasticsearch-certutil ca --pem --out /certs/certs.zip
+      args:
+        creates: "{{ ansible_env.PWD }}/certs/certs.zip"
+
+    - name: Unzip the certs
+      unarchive:
+        src: "{{ ansible_env.PWD }}/certs/certs.zip"
+        dest: "{{ ansible_env.PWD }}/certs"
+        remote_src: yes
+
+    - name: Generate Elasticsearch node certificates
+      command: >
+        docker run --rm -v "{{ ansible_env.PWD }}/certs:/certs"
+        docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+        elasticsearch-certutil cert --pem
+        --name "{{ item }}"
+        --ca-cert /certs/ca/ca.crt
+        --ca-key /certs/ca/ca.key
+        --out /certs/{{ item }}-certs.zip
+      loop:
+        - es-master1
+        - es-master2
+        - es-master3
+        - es-data1
+        - es-data2
+        - es-coord1
+      args:
+        creates: "{{ ansible_env.PWD }}/certs/{{ item }}-certs.zip"
+
+    - name: Unzip Elasticsearch node certificates
+      unarchive:
+        src: "{{ ansible_env.PWD }}/certs/{{ item }}-certs.zip"
+        dest: "{{ ansible_env.PWD }}/certs"
+        remote_src: yes
+      loop:
+        - es-master1
+        - es-master2
+        - es-master3
+        - es-data1
+        - es-data2
+        - es-coord1
