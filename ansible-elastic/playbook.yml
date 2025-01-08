@@ -1,0 +1,5 @@
+- name: Setup Elasticsearch and Kibana
+  hosts: all
+  roles:
+    - elasticsearch
+    - kibana

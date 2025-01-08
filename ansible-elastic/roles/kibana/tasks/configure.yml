@@ -1,0 +1,13 @@
+- name: Configure Kibana
+  template:
+    src: kibana.yml.j2
+    dest: /etc/kibana/kibana.yml
+    owner: kibana
+    group: kibana
+    mode: 0644
+
+- name: Enable and start Kibana
+  systemd:
+    name: kibana
+    state: started
+    enabled: true

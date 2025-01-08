@@ -1,0 +1,6 @@
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["https://es-coord1:9200"]
+elasticsearch.ssl.certificateAuthorities: ["{{ certs_dir }}/ca.crt"]
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "{{ kibana_password }}"
+xpack.security.enabled: true
