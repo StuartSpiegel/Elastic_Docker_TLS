@@ -1,0 +1,340 @@
+version: '3.7'
+
+services:
+  # =======================
+  # Elasticsearch Masters
+  # =======================
+  es-master1:
+    build:
+      context: ./elasticsearch
+      dockerfile: Dockerfile
+    container_name: es-master1
+    environment:
+      - node.name=es-master1
+      - cluster.name=fullscale-cluster
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - node.roles=master
+      - network.host=0.0.0.0
+
+      # Enable security
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      # Updated to match your actual filename:
+      - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+
+      - xpack.security.transport.ssl.keystore.secure_password=changeme
+      - xpack.security.transport.ssl.truststore.secure_password=changeme
+      - xpack.security.http.ssl.keystore.secure_password=changeme
+      - xpack.security.http.ssl.truststore.secure_password=changeme
+
+      # AWS environment variables for S3 snapshot usage
+      - AWS_ACCESS_KEY_ID=AKIA...
+      - AWS_SECRET_ACCESS_KEY=someSecret
+      - AWS_DEFAULT_REGION=us-east-1
+
+      - ELASTIC_PASSWORD=changeme
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+
+    ports:
+      - 9201:9200
+    volumes:
+      - es-master1-data:/usr/share/elasticsearch/data
+      - ./certs:/usr/share/elasticsearch/config/certs
+    networks:
+      - es-network
+
+  es-master2:
+    build:
+      context: ./elasticsearch
+      dockerfile: Dockerfile
+    container_name: es-master2
+    environment:
+      - node.name=es-master2
+      - cluster.name=fullscale-cluster
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - node.roles=master
+      - network.host=0.0.0.0
+
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      # Updated to match your actual filename:
+      - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+
+      - xpack.security.transport.ssl.keystore.secure_password=changeme
+      - xpack.security.transport.ssl.truststore.secure_password=changeme
+      - xpack.security.http.ssl.keystore.secure_password=changeme
+      - xpack.security.http.ssl.truststore.secure_password=changeme
+
+      # AWS environment variables for S3 snapshot usage
+      - AWS_ACCESS_KEY_ID=AKIA...
+      - AWS_SECRET_ACCESS_KEY=someSecret
+      - AWS_DEFAULT_REGION=us-east-1
+
+      - ELASTIC_PASSWORD=changeme
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+
+    ports:
+      - 9202:9200
+    volumes:
+      - es-master2-data:/usr/share/elasticsearch/data
+      - ./certs:/usr/share/elasticsearch/config/certs
+    networks:
+      - es-network
+
+  es-master3:
+    build:
+      context: ./elasticsearch
+      dockerfile: Dockerfile
+    container_name: es-master3
+    environment:
+      - node.name=es-master3
+      - cluster.name=fullscale-cluster
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - node.roles=master
+      - network.host=0.0.0.0
+
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      # Updated to match your actual filename:
+      - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+
+      - xpack.security.transport.ssl.keystore.secure_password=changeme
+      - xpack.security.transport.ssl.truststore.secure_password=changeme
+      - xpack.security.http.ssl.keystore.secure_password=changeme
+      - xpack.security.http.ssl.truststore.secure_password=changeme
+
+      # AWS environment variables for S3 snapshot usage
+      - AWS_ACCESS_KEY_ID=AKIA...
+      - AWS_SECRET_ACCESS_KEY=someSecret
+      - AWS_DEFAULT_REGION=us-east-1
+
+      - ELASTIC_PASSWORD=changeme
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+
+    ports:
+      - 9203:9200
+    volumes:
+      - es-master3-data:/usr/share/elasticsearch/data
+      - ./certs:/usr/share/elasticsearch/config/certs
+    networks:
+      - es-network
+
+  # =======================
+  # Elasticsearch Data/Ingest/Coordinating
+  # =======================
+  es-data1:
+    build:
+      context: ./elasticsearch
+      dockerfile: Dockerfile
+    container_name: es-data1
+    environment:
+      - node.name=es-data1
+      - cluster.name=fullscale-cluster
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - node.roles=data,ingest
+      - network.host=0.0.0.0
+
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      # Updated to match your actual filename:
+      - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+
+      - xpack.security.transport.ssl.keystore.secure_password=changeme
+      - xpack.security.transport.ssl.truststore.secure_password=changeme
+      - xpack.security.http.ssl.keystore.secure_password=changeme
+      - xpack.security.http.ssl.truststore.secure_password=changeme
+
+      # AWS environment variables for S3 snapshot usage
+      - AWS_ACCESS_KEY_ID=AKIA...
+      - AWS_SECRET_ACCESS_KEY=someSecret
+      - AWS_DEFAULT_REGION=us-east-1
+
+      - ELASTIC_PASSWORD=changeme
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+
+    ports:
+      - 9204:9200
+    volumes:
+      - es-data1-data:/usr/share/elasticsearch/data
+      - ./certs:/usr/share/elasticsearch/config/certs
+    networks:
+      - es-network
+
+  es-data2:
+    build:
+      context: ./elasticsearch
+      dockerfile: Dockerfile
+    container_name: es-data2
+    environment:
+      - node.name=es-data2
+      - cluster.name=fullscale-cluster
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - node.roles=data,ingest
+      - network.host=0.0.0.0
+
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      # Updated to match your actual filename:
+      - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+
+      - xpack.security.transport.ssl.keystore.secure_password=changeme
+      - xpack.security.transport.ssl.truststore.secure_password=changeme
+      - xpack.security.http.ssl.keystore.secure_password=changeme
+      - xpack.security.http.ssl.truststore.secure_password=changeme
+
+      # AWS environment variables for S3 snapshot usage
+      - AWS_ACCESS_KEY_ID=AKIA...
+      - AWS_SECRET_ACCESS_KEY=someSecret
+      - AWS_DEFAULT_REGION=us-east-1
+
+      - ELASTIC_PASSWORD=changeme
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+
+    ports:
+      - 9205:9200
+    volumes:
+      - es-data2-data:/usr/share/elasticsearch/data
+      - ./certs:/usr/share/elasticsearch/config/certs
+    networks:
+      - es-network
+
+  es-data3:
+    build:
+      context: ./elasticsearch
+      dockerfile: Dockerfile
+    container_name: es-data3
+    environment:
+      - node.name=es-data3
+      - cluster.name=fullscale-cluster
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - node.roles=data,ingest
+      - network.host=0.0.0.0
+
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      # Updated to match your actual filename:
+      - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+
+      - xpack.security.transport.ssl.keystore.secure_password=changeme
+      - xpack.security.transport.ssl.truststore.secure_password=changeme
+      - xpack.security.http.ssl.keystore.secure_password=changeme
+      - xpack.security.http.ssl.truststore.secure_password=changeme
+
+      # AWS environment variables for S3 snapshot usage
+      - AWS_ACCESS_KEY_ID=AKIA...
+      - AWS_SECRET_ACCESS_KEY=someSecret
+      - AWS_DEFAULT_REGION=us-east-1
+
+      - ELASTIC_PASSWORD=changeme
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+
+    ports:
+      - 9206:9200
+    volumes:
+      - es-data3-data:/usr/share/elasticsearch/data
+      - ./certs:/usr/share/elasticsearch/config/certs
+    networks:
+      - es-network
+
+  # =======================
+  # Kibana Nodes
+  # =======================
+  kibana1:
+    build:
+      context: ./kibana
+      dockerfile: Dockerfile
+    container_name: kibana1
+    environment:
+      - SERVER_NAME=kibana1
+      - ELASTICSEARCH_HOSTS=https://es-master1:9200,https://es-master2:9200,https://es-master3:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=changeme
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
+
+    ports:
+      - 5601:5601
+    networks:
+      - es-network
+    depends_on:
+      - es-master1
+      - es-master2
+      - es-master3
+      - es-data1
+      - es-data2
+      - es-data3
+    volumes:
+      - ${PWD}/certs:/usr/share/kibana/config/certs
+
+  kibana2:
+    build:
+      context: ./kibana
+      dockerfile: Dockerfile
+    container_name: kibana2
+    environment:
+      - SERVER_NAME=kibana2
+      - ELASTICSEARCH_HOSTS=https://es-master1:9200,https://es-master2:9200,https://es-master3:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=changeme
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
+
+    ports:
+      - 5602:5601
+    networks:
+      - es-network
+    depends_on:
+      - es-master1
+      - es-master2
+      - es-master3
+      - es-data1
+      - es-data2
+      - es-data3
+    volumes:
+      - ${PWD}/certs:/usr/share/kibana/config/certs
+
+networks:
+  es-network:
+    driver: bridge
+
+volumes:
+  es-master1-data:
+  es-master2-data:
+  es-master3-data:
+  es-data1-data:
+  es-data2-data:
+  es-data3-data:
