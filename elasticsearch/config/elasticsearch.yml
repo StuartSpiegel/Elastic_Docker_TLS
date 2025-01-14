@@ -1,0 +1,39 @@
+# =================================================================
+# Elasticsearch Configuration for a Fullscale Cluster
+# =================================================================
+
+cluster.name: fullscale-cluster
+
+# Example node configuration (override in docker-compose if needed):
+node.name: es-master1
+
+# Roles can be overridden via environment variables in docker-compose
+# node.roles: [ "master" ]  # for a master node
+# node.roles: [ "data", "ingest", "coordinating" ]  # for a data node
+
+# Example path settings (Docker best practice is to use volumes)
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
+
+# Network settings
+network.host: 0.0.0.0
+http.port: 9200
+transport.port: 9300
+
+# Discovery settings (often overridden in docker-compose)
+discovery.seed_hosts: ["es-master1", "es-master2", "es-master3", "es-data1", "es-data2", "es-data3"]
+
+# Security (TLS, etc.) can be configured by environment variables in docker-compose
+# For example:
+# xpack.security.enabled: true
+# xpack.security.transport.ssl.enabled: true
+# xpack.security.http.ssl.enabled: true
+
+# Additional cluster-wide settings
+cluster.initial_master_nodes: ["es-master1", "es-master2", "es-master3"]
+
+# (Optional) Set a custom minimum master nodes for fault tolerance, but in 7.x+,
+# we mostly rely on cluster.initial_master_nodes for bootstrapping.
+
+# (Optional) Example usage of the built-in security realm
+# xpack.security.authc.realms.native.native1.order: 0

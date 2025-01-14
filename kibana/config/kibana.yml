@@ -1,0 +1,19 @@
+# Minimal kibana.yml for Kibana 8.x
+server.host: "0.0.0.0"
+elasticsearch.hosts: ["http://es-master1:9200"]
+# (Use http:// if your ES is not currently TLS-enabled, or https:// if it is)
+
+logging:
+  root:
+    level: info
+    appenders: [default]
+
+  appenders:
+    default:
+      type: console
+      layout:
+        kind: pattern
+        pattern: "[%date][%level][%logger] %message"
+
+# Temporarily turn off x-pack security
+xpack.security.enabled: false
