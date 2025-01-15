@@ -1,19 +1,44 @@
-# Minimal kibana.yml for Kibana 8.x
+# ======================
+# Basic Kibana settings
+# ======================
+
+server.name: "kibana"
 server.host: "0.0.0.0"
-elasticsearch.hosts: ["http://es-master1:9200"]
-# (Use http:// if your ES is not currently TLS-enabled, or https:// if it is)
 
-logging:
-  root:
-    level: info
-    appenders: [default]
+# -----------------------
+# TLS for Kibana server
+# -----------------------
+server.ssl.enabled: true
+server.ssl.certificate: /usr/share/kibana/config/certs/kibana.crt
+server.ssl.key: /usr/share/kibana/config/certs/kibana.key
 
-  appenders:
-    default:
-      type: console
-      layout:
-        kind: pattern
-        pattern: "[%date][%level][%logger] %message"
+# CA
+elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certs/elastic-stack-ca.crt"]
 
-# Temporarily turn off x-pack security
-xpack.security.enabled: false
+# -----------------------
+# Elasticsearch Settings
+# -----------------------
+elasticsearch.hosts: 
+  - "https://es-master1:9200"
+  - "https://es-master2:9200"
+
+elasticsearch.ssl.verificationMode: certificate
+# elasticsearch.username: "elastic"
+# elasticsearch.password: "changeme"
+elasticsearch.serviceAccountToken: "AAEAAWVsYXN0aWMva2liYW5hL3Rva2VuX0NPZWNhcFFCbjJ0U0c4WkNXazVTOl91LVFtMzEyUTRxV2hGMEZIWjk2TXc"
+
+# -----------------------
+# X-Pack security
+# -----------------------
+xpack.security.enabled: true
+xpack.encryptedSavedObjects.encryptionKey: "some_long_and_random_key_with_min_length_32"
+
+# -----------------------
+# Logging (Kibana 8.x)
+# -----------------------
+# logging.root.level: info
+# logging.root.appenders: [default]
+
+# logging.appenders.default.type: console
+# logging.appenders.default.layout.kind: pattern
+# logging.appenders.default.layout.pattern: "[%date][%level][%logger] %message"
