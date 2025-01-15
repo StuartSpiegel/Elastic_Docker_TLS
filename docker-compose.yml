@@ -282,10 +282,12 @@ services:
     container_name: kibana1
     environment:
       - SERVER_NAME=kibana1
-      - ELASTICSEARCH_HOSTS=https://es-master1:9200,https://es-master2:9200,https://es-master3:9200
-      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_HOSTS=["https://es-master1:9200","https://es-master2:9200","https://es-master3:9200"]
+      # - ELASTICSEARCH_USERNAME=elastic
       - ELASTICSEARCH_PASSWORD=changeme
       - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
+      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=AAEAAWVsYXN0aWMva2liYW5hL3Rva2VuX0NPZWNhcFFCbjJ0U0c4WkNXazVTOl91LVFtMzEyUTRxV2hGMEZIWjk2TXc
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=["/usr/share/kibana/config/certs/elastic-stack-ca.crt"]
 
     ports:
       - 5601:5601
@@ -299,7 +301,7 @@ services:
       - es-data2
       - es-data3
     volumes:
-      - ${PWD}/certs:/usr/share/kibana/config/certs
+      - ./certs:/usr/share/kibana/config/certs
 
   kibana2:
     build:
@@ -308,10 +310,13 @@ services:
     container_name: kibana2
     environment:
       - SERVER_NAME=kibana2
-      - ELASTICSEARCH_HOSTS=https://es-master1:9200,https://es-master2:9200,https://es-master3:9200
-      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_HOSTS=["https://es-master1:9200","https://es-master2:9200","https://es-master3:9200"]
+      # - ELASTICSEARCH_USERNAME=elastic
       - ELASTICSEARCH_PASSWORD=changeme
       - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
+      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=AAEAAWVsYXN0aWMva2liYW5hL3Rva2VuX0NPZWNhcFFCbjJ0U0c4WkNXazVTOl91LVFtMzEyUTRxV2hGMEZIWjk2TXc
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=["/usr/share/kibana/config/certs/elastic-stack-ca.crt"]
+
 
     ports:
       - 5602:5601
@@ -325,7 +330,7 @@ services:
       - es-data2
       - es-data3
     volumes:
-      - ${PWD}/certs:/usr/share/kibana/config/certs
+      - ./certs:/usr/share/kibana/config/certs
 
 networks:
   es-network:
