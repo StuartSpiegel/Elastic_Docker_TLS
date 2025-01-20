@@ -39,7 +39,7 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
 
       - ELASTIC_PASSWORD=changeme
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
 
     ports:
       - 9201:9200
@@ -83,7 +83,7 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
 
       - ELASTIC_PASSWORD=changeme
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
 
     ports:
       - 9202:9200
@@ -127,7 +127,7 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
 
       - ELASTIC_PASSWORD=changeme
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
 
     ports:
       - 9203:9200
@@ -175,6 +175,10 @@ services:
 
       - ELASTIC_PASSWORD=changeme
       - ES_JAVA_OPTS=-Xms2g -Xmx2g
+    deploy:
+      resources:
+        limits:
+          memory: 3g
 
     ports:
       - 9204:9200
@@ -219,7 +223,10 @@ services:
 
       - ELASTIC_PASSWORD=changeme
       - ES_JAVA_OPTS=-Xms2g -Xmx2g
-
+    deploy:
+      resources:
+        limits:
+          memory: 3g
     ports:
       - 9205:9200
     volumes:
@@ -263,6 +270,10 @@ services:
 
       - ELASTIC_PASSWORD=changeme
       - ES_JAVA_OPTS=-Xms2g -Xmx2g
+    deploy:
+      resources:
+        limits:
+          memory: 3g
 
     ports:
       - 9206:9200
@@ -288,6 +299,11 @@ services:
       - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
       - ELASTICSEARCH_SERVICEACCOUNTTOKEN=AAEAAWVsYXN0aWMva2liYW5hL3Rva2VuX0NPZWNhcFFCbjJ0U0c4WkNXazVTOl91LVFtMzEyUTRxV2hGMEZIWjk2TXc
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=["/usr/share/kibana/config/certs/elastic-stack-ca.crt"]
+      - NODE_OPTIONS=--max-old-space-size=2048
+    deploy:
+      resources:
+        limits:
+          memory: 2g
 
     ports:
       - 5601:5601
@@ -316,7 +332,11 @@ services:
       - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
       - ELASTICSEARCH_SERVICEACCOUNTTOKEN=AAEAAWVsYXN0aWMva2liYW5hL3Rva2VuX0NPZWNhcFFCbjJ0U0c4WkNXazVTOl91LVFtMzEyUTRxV2hGMEZIWjk2TXc
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=["/usr/share/kibana/config/certs/elastic-stack-ca.crt"]
-
+      - NODE_OPTIONS=--max-old-space-size=2048
+    deploy:
+      resources:
+        limits:
+          memory: 2g
 
     ports:
       - 5602:5601
