@@ -5,3 +5,4 @@ terraform.tfstate.backup
 
 # Ignore any crash logs
 crash.log
+.terraform/
