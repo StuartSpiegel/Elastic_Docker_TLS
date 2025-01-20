@@ -442,3 +442,15 @@ docker exec -it es-master1 /usr/share/elasticsearch/bin/elasticsearch-reset-pass
 # Testing VS Production
 
 - For testing purposes I have hard coded the Elastic password as an ENVironment variable in the Dockerfile. For Security reasons you would never do this in Production.
+
+# Terraform Deployment 
+
+- Initialize and deploy with Terraform 
+
+~~~
+terraform init
+
+terraform plan
+
+terraform apply
+~~~
