@@ -1,0 +1,4 @@
+---
+docker_image_elasticsearch: "docker.elastic.co/elasticsearch/elasticsearch:8.10.2"
+docker_image_kibana: "docker.elastic.co/kibana/kibana:8.10.2"
+docker_compose_file: "/opt/elasticsearch/docker-compose.yml"

@@ -1,0 +1,49 @@
+---
+- name: Install Docker and Docker Compose
+  ansible.builtin.include_role:
+    name: geerlingguy.docker
+
+- name: Ensure Elasticsearch directories exist
+  ansible.builtin.file:
+    path: "{{ elastic_docker_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy Docker Compose file
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ docker_compose_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy Elasticsearch Dockerfile
+  ansible.builtin.copy:
+    src: files/Dockerfile.elasticsearch
+    dest: "{{ elastic_docker_path }}/Dockerfile.elasticsearch"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy Kibana Dockerfile
+  ansible.builtin.copy:
+    src: files/Dockerfile.kibana
+    dest: "{{ elastic_docker_path }}/Dockerfile.kibana"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Copy configuration files
+  ansible.builtin.copy:
+    src: files/config/
+    dest: "{{ elastic_docker_path }}/config/"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Start Docker Compose
+  ansible.builtin.command:
+    cmd: "docker-compose up -d"
+    chdir: "{{ elastic_docker_path }}"
