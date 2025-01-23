@@ -1,0 +1,9 @@
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+
+elastic_hosts:
+  hosts:
+    localhost:
+      ansible_connection: local

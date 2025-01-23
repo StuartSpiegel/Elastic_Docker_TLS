@@ -1,0 +1,33 @@
+version: "{{ docker_compose_version }}"
+
+services:
+  es-master1:
+    image: "{{ docker_image_elasticsearch }}"
+    container_name: es-master1
+    environment:
+      - node.name=es-master1
+      - cluster.name=fullscale-cluster
+      - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
+      - cluster.initial_master_nodes=es-master1,es-master2,es-master3
+      - node.roles=master
+      - network.host=0.0.0.0
+    ports:
+      - "9201:9200"
+    volumes:
+      - es-master1-data:/usr/share/elasticsearch/data
+      - ./certs:/usr/share/elasticsearch/config/certs
+    networks:
+      - "{{ es_network }}"
+  kibana:
+    image: "{{ docker_image_kibana }}"
+    container_name: kibana
+    environment:
+      - SERVER_NAME=kibana
+    ports:
+      - "5601:5601"
+    networks:
+      - "{{ es_network }}"
+
+networks:
+  "{{ es_network }}":
+    driver: bridge

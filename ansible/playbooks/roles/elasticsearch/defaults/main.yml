@@ -1,0 +1,6 @@
+---
+elastic_docker_path: "/opt/elasticsearch"
+docker_compose_version: "3.7"
+es_memory: "2g"
+es_network: "es-network"
+kibana_memory: "2g"

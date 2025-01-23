@@ -1,60 +1,3 @@
-# Docker Configuration for 6 Node Elasticsearch cluster with TLS Wildcard cert and 2 Kibana Nodes
-
-### How This Dockerfile Works
-- Starts from the official Elasticsearch 8.10.2 image.
-- Generates a CA and node certificates (in a simplistic way) for all possible Elastic stack containers (master & data & kibana) in the cluster.
-- Uses a single wildcard certificate for demonstration (DNS names: es-master1, es-master2, es-master3, es-data1, es-data2, es-data3, kibana1, kibana2).
-- In production, you would generate unique certs for each node or use FQDN.
-- Copies a base elasticsearch.yml into the image.
-- Sets a default ELASTIC_PASSWORD environment variable for the built-in elastic user (again, not recommended to embed secrets in the image for production).
-- Generates Certs for Kibana using combined script (2 Kibana Nodes)
-
-~~~
-# =================================================================
-# Elasticsearch Configuration for a Fullscale Cluster
-# =================================================================
-
-cluster.name: fullscale-cluster
-
-# Example node configuration (override in docker-compose if needed):
-node.name: es-master1
-
-# Roles can be overridden via environment variables in docker-compose
-# node.roles: [ "master" ]  # for a master node
-# node.roles: [ "data", "ingest", "coordinating" ]  # for a data node
-
-# Example path settings (Docker best practice is to use volumes)
-path.data: /usr/share/elasticsearch/data
-path.logs: /usr/share/elasticsearch/logs
-
-# Network settings
-network.host: 0.0.0.0
-http.port: 9200
-transport.port: 9300
-
-# Discovery settings (often overridden in docker-compose)
-discovery.seed_hosts: ["es-master1", "es-master2", "es-master3", "es-data1", "es-data2", "es-data3"]
-
-# Security (TLS, etc.) can be configured by environment variables in docker-compose
-# For example:
-# xpack.security.enabled: true
-# xpack.security.transport.ssl.enabled: true
-# xpack.security.http.ssl.enabled: true
-
-# Additional cluster-wide settings
-cluster.initial_master_nodes: ["es-master1", "es-master2", "es-master3"]
-
-# (Optional) Set a custom minimum master nodes for fault tolerance, but in 7.x+,
-# we mostly rely on cluster.initial_master_nodes for bootstrapping.
-
-# (Optional) Example usage of the built-in security realm
-# xpack.security.authc.realms.native.native1.order: 0
-
-~~~
-
-# Docker Compose
-
-~~~
 version: '3.7'
 
 services:
@@ -96,7 +39,7 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
 
       - ELASTIC_PASSWORD=changeme
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
 
     ports:
       - 9201:9200
@@ -140,7 +83,7 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
 
       - ELASTIC_PASSWORD=changeme
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
 
     ports:
       - 9202:9200
@@ -184,7 +127,7 @@ services:
       - AWS_DEFAULT_REGION=us-east-1
 
       - ELASTIC_PASSWORD=changeme
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
 
     ports:
       - 9203:9200
@@ -232,6 +175,10 @@ services:
 
       - ELASTIC_PASSWORD=changeme
       - ES_JAVA_OPTS=-Xms2g -Xmx2g
+    deploy:
+      resources:
+        limits:
+          memory: 3g
 
     ports:
       - 9204:9200
@@ -276,7 +223,10 @@ services:
 
       - ELASTIC_PASSWORD=changeme
       - ES_JAVA_OPTS=-Xms2g -Xmx2g
-
+    deploy:
+      resources:
+        limits:
+          memory: 3g
     ports:
       - 9205:9200
     volumes:
@@ -320,6 +270,10 @@ services:
 
       - ELASTIC_PASSWORD=changeme
       - ES_JAVA_OPTS=-Xms2g -Xmx2g
+    deploy:
+      resources:
+        limits:
+          memory: 3g
 
     ports:
       - 9206:9200
@@ -345,6 +299,11 @@ services:
       - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
       - ELASTICSEARCH_SERVICEACCOUNTTOKEN=AAEAAWVsYXN0aWMva2liYW5hL3Rva2VuX0NPZWNhcFFCbjJ0U0c4WkNXazVTOl91LVFtMzEyUTRxV2hGMEZIWjk2TXc
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=["/usr/share/kibana/config/certs/elastic-stack-ca.crt"]
+      - NODE_OPTIONS=--max-old-space-size=2048
+    deploy:
+      resources:
+        limits:
+          memory: 2g
 
     ports:
       - 5601:5601
@@ -373,7 +332,11 @@ services:
       - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
       - ELASTICSEARCH_SERVICEACCOUNTTOKEN=AAEAAWVsYXN0aWMva2liYW5hL3Rva2VuX0NPZWNhcFFCbjJ0U0c4WkNXazVTOl91LVFtMzEyUTRxV2hGMEZIWjk2TXc
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=["/usr/share/kibana/config/certs/elastic-stack-ca.crt"]
-
+      - NODE_OPTIONS=--max-old-space-size=2048
+    deploy:
+      resources:
+        limits:
+          memory: 2g
 
     ports:
       - 5602:5601
@@ -400,96 +363,3 @@ volumes:
   es-data1-data:
   es-data2-data:
   es-data3-data:
-
-~~~
-
-# Key Points in docker-compose.yml
-
-**image: my-elasticsearch:latest**
-
-- Assumes you built your Dockerfile with
-
-~~~
- docker-compose build
-~~~
-
-# Build and Run
-
-~~~
-docker-compose build
-
-docker-compose up -d
-
-# Make sure each service is in a healthy/running state.
-docker-compose ps
-
-docker-compose logs es-master1
-~~~
-
-# Verify security
-- The --insecure flag is needed because it’s a self-signed certificate. For production, you would import the CA (certs/ca/ca.crt) into your trusted store or use a certificate signed by a recognized CA.
-
-~~~
-curl --insecure -u elastic:MyElasticsearchPassword https://localhost:9200
-~~~
-
-# Resetting the Elastic Default Password if needed
-
-~~~
-docker exec -it es-master1 /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
-~~~
-
-# Testing VS Production
-
-- For testing purposes I have hard coded the Elastic password as an ENVironment variable in the Dockerfile. For Security reasons you would never do this in Production.
-
-# Terraform Deployment 
-
-- Initialize and deploy with Terraform 
-
-~~~
-terraform init
-
-terraform plan
-
-terraform apply
-~~~
-
-# Deploying with Ansible 
-
-- We have defined a custom role called "elasticsearch" in "ansible/playbooks/roles/elasticsearch" that is fully ready for customization and enhancements.
-- We are heavily leveraging Roles created by Jeff Geerling (a.k.a. Geerlingguy: **geerlingguy.docker**)
-
-1. Run the playbook in CHECK mode - which means changes to the host are simulated rather than actually performed on the end host.
-
-~~~
-ansible-playbook deploy_elasticsearch.yml -i inventory.yml --check
-~~~
-
-2. Debug Playbook Execution
-
-~~~
-ansible-playbook deploy_elasticsearch.yml -i inventory.yml --check -vvv
-~~~
-
-3. Syntax Check Mode is also an option or using the Ansible linter
-
-~~~
-ansible-playbook deploy_elasticsearch.yml -i inventory.yml --syntax-check
-
-ansible lint deploy_elasticsearch.yml
-~~~
-
-# Verifying and Testing a Role with Molecule
-
-- Molecule is a framework for testing Ansible roles and playbooks
-- [text](https://ansible.readthedocs.io/projects/molecule/)
-
-
-~~~
-pip install molecule docker
-
-molecule init scenario --driver-name docker
-
-molecule test
-~~~

@@ -1,0 +1,44 @@
+# ======================
+# Basic Kibana settings
+# ======================
+
+server.name: "kibana"
+server.host: "0.0.0.0"
+
+# -----------------------
+# TLS for Kibana server
+# -----------------------
+server.ssl.enabled: true
+server.ssl.certificate: /usr/share/kibana/config/certs/kibana.crt
+server.ssl.key: /usr/share/kibana/config/certs/kibana.key
+
+# CA
+elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certs/elastic-stack-ca.crt"]
+
+# -----------------------
+# Elasticsearch Settings
+# -----------------------
+elasticsearch.hosts: 
+  - "https://es-master1:9200"
+  - "https://es-master2:9200"
+
+elasticsearch.ssl.verificationMode: certificate
+# elasticsearch.username: "elastic"
+# elasticsearch.password: "changeme"
+elasticsearch.serviceAccountToken: "AAEAAWVsYXN0aWMva2liYW5hL3Rva2VuX0NPZWNhcFFCbjJ0U0c4WkNXazVTOl91LVFtMzEyUTRxV2hGMEZIWjk2TXc"
+
+# -----------------------
+# X-Pack security
+# -----------------------
+xpack.security.enabled: true
+xpack.encryptedSavedObjects.encryptionKey: "some_long_and_random_key_with_min_length_32"
+
+# -----------------------
+# Logging (Kibana 8.x)
+# -----------------------
+# logging.root.level: info
+# logging.root.appenders: [default]
+
+# logging.appenders.default.type: console
+# logging.appenders.default.layout.kind: pattern
+# logging.appenders.default.layout.pattern: "[%date][%level][%logger] %message"

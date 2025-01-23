@@ -1,0 +1,8 @@
+- name: Deploy Elasticsearch
+  hosts: all
+  become: true
+  vars:
+    docker_compose_file: /opt/elasticsearch/docker-compose.yml
+    elastic_docker_path: /opt/elasticsearch
+  roles:
+    - elasticsearch
