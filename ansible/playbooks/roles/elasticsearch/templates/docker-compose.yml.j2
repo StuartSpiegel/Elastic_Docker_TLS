@@ -1,16 +1,38 @@
 version: "{{ docker_compose_version }}"
 
 services:
+  # =======================
+  # Elasticsearch Masters
+  # =======================
   es-master1:
-    image: "{{ docker_image_elasticsearch }}"
+    build:
+      context: ./elasticsearch
+      dockerfile: Dockerfile
     container_name: es-master1
     environment:
       - node.name=es-master1
-      - cluster.name=fullscale-cluster
+      - cluster.name={{ cluster_name }}
       - discovery.seed_hosts=es-master1,es-master2,es-master3,es-data1,es-data2,es-data3
       - cluster.initial_master_nodes=es-master1,es-master2,es-master3
       - node.roles=master
       - network.host=0.0.0.0
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.http.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elasticsearch-nodes.p12
+      - xpack.security.transport.ssl.keystore.secure_password={{ es_keystore_password }}
+      - xpack.security.transport.ssl.truststore.secure_password={{ es_truststore_password }}
+      - xpack.security.http.ssl.keystore.secure_password={{ es_keystore_password }}
+      - xpack.security.http.ssl.truststore.secure_password={{ es_truststore_password }}
+      - AWS_ACCESS_KEY_ID={{ aws_access_key_id }}
+      - AWS_SECRET_ACCESS_KEY={{ aws_secret_access_key }}
+      - AWS_DEFAULT_REGION={{ aws_region }}
+      - ELASTIC_PASSWORD={{ elastic_password }}
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ports:
       - "9201:9200"
     volumes:
@@ -18,16 +40,105 @@ services:
       - ./certs:/usr/share/elasticsearch/config/certs
     networks:
       - "{{ es_network }}"
-  kibana:
-    image: "{{ docker_image_kibana }}"
-    container_name: kibana
+
+  es-master2:
+    <<: *es-master1
+    container_name: es-master2
     environment:
-      - SERVER_NAME=kibana
+      - node.name=es-master2
+    ports:
+      - "9202:9200"
+    volumes:
+      - es-master2-data:/usr/share/elasticsearch/data
+
+  es-master3:
+    <<: *es-master1
+    container_name: es-master3
+    environment:
+      - node.name=es-master3
+    ports:
+      - "9203:9200"
+    volumes:
+      - es-master3-data:/usr/share/elasticsearch/data
+
+  # =======================
+  # Elasticsearch Data Nodes
+  # =======================
+  es-data1:
+    <<: *es-master1
+    container_name: es-data1
+    environment:
+      - node.name=es-data1
+      - node.roles=data,ingest
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+    ports:
+      - "9204:9200"
+    volumes:
+      - es-data1-data:/usr/share/elasticsearch/data
+
+  es-data2:
+    <<: *es-data1
+    container_name: es-data2
+    environment:
+      - node.name=es-data2
+    ports:
+      - "9205:9200"
+    volumes:
+      - es-data2-data:/usr/share/elasticsearch/data
+
+  es-data3:
+    <<: *es-data1
+    container_name: es-data3
+    environment:
+      - node.name=es-data3
+    ports:
+      - "9206:9200"
+    volumes:
+      - es-data3-data:/usr/share/elasticsearch/data
+
+  # =======================
+  # Kibana Nodes
+  # =======================
+  kibana1:
+    build:
+      context: ./kibana
+      dockerfile: Dockerfile
+    container_name: kibana1
+    environment:
+      - SERVER_NAME=kibana1
+      - ELASTICSEARCH_HOSTS=["https://es-master1:9200", "https://es-master2:9200", "https://es-master3:9200"]
+      - ELASTICSEARCH_PASSWORD={{ elastic_password }}
+      - ELASTICSEARCH_SSL_VERIFICATIONMODE=certificate
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=["/usr/share/kibana/config/certs/elastic-stack-ca.crt"]
+      - NODE_OPTIONS=--max-old-space-size=2048
     ports:
       - "5601:5601"
     networks:
       - "{{ es_network }}"
+    depends_on:
+      - es-master1
+      - es-master2
+      - es-master3
+      - es-data1
+      - es-data2
+      - es-data3
+    volumes:
+      - ./certs:/usr/share/kibana/config/certs
+
+  kibana2:
+    <<: *kibana1
+    container_name: kibana2
+    ports:
+      - "5602:5601"
 
 networks:
   "{{ es_network }}":
     driver: bridge
+
+volumes:
+  es-master1-data:
+  es-master2-data:
+  es-master3-data:
+  es-data1-data:
+  es-data2-data:
+  es-data3-data:

@@ -480,10 +480,38 @@ ansible-playbook deploy_elasticsearch.yml -i inventory.yml --syntax-check
 ansible lint deploy_elasticsearch.yml
 ~~~
 
+4. Running Ansible with elevated Priviledges 
+
+~~~
+ansible-playbook deploy_elasticsearch.yml -i inventory.yml --check --ask-become-pass
+~~~
+
+- If you don't want to be prompted for the password, include the become configuration in your inventory or playbook:
+~~~
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_become: true
+      ansible_become_method: sudo
+
+~~~
+
+~~~
+- name: Deploy Elasticsearch
+  hosts: all
+  become: true
+  tasks:
+    - name: Example task
+      ansible.builtin.command:
+        cmd: echo "Testing privilege escalation"
+
+~~~
+
 # Verifying and Testing a Role with Molecule
 
 - Molecule is a framework for testing Ansible roles and playbooks
-- [text](https://ansible.readthedocs.io/projects/molecule/)
+- [Molecule](https://ansible.readthedocs.io/projects/molecule/)
 
 
 ~~~
