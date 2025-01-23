@@ -1,4 +1,17 @@
 ---
 docker_image_elasticsearch: "docker.elastic.co/elasticsearch/elasticsearch:8.10.2"
 docker_image_kibana: "docker.elastic.co/kibana/kibana:8.10.2"
+
+# Paths
 docker_compose_file: "/opt/elasticsearch/docker-compose.yml"
+es_network: "es-network"
+
+# Elasticsearch Security
+es_keystore_password: "changeme"
+es_truststore_password: "changeme"
+elastic_password: "changeme"
+
+# AWS Credentials for S3 Snapshot Repository
+aws_access_key_id: "AKIA..."
+aws_secret_access_key: "someSecret"
+aws_region: "us-east-1"
